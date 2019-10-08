@@ -46,10 +46,29 @@ import org.xml.sax.SAXParseException;
  */
 public class XPathParser {
 
+  /**
+   * document对象
+   */
   private final Document document;
+
+  /**
+   * 是否开启验证
+   */
   private boolean validation;
+
+  /**
+   * 用于加载本地DTD文件
+   */
   private EntityResolver entityResolver;
+
+  /**
+   * mybatis-config.xml中properties标签定义的键值对集合
+   */
   private Properties variables;
+
+  /**
+   * XPath对象
+   */
   private XPath xpath;
 
   public XPathParser(String xml) {
@@ -142,6 +161,8 @@ public class XPathParser {
 
   public String evalString(Object root, String expression) {
     String result = (String) evaluate(expression, root, XPathConstants.STRING);
+    // xml解析结果为${xxx}，表示为动态占位符，要解析出对应的默认值
+    // 比如：${username} 解析成root
     result = PropertyParser.parse(result, variables);
     return result;
   }
