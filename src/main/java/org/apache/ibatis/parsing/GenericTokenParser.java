@@ -44,7 +44,7 @@ public class GenericTokenParser {
       return "";
     }
     // search open token
-    // 寻找开始的open token的文职
+    // 寻找开始的open token的位置
     int start = text.indexOf(openToken);
     if (start == -1) {
       // 找不到直接返回
@@ -71,31 +71,43 @@ public class GenericTokenParser {
         } else {
           expression.setLength(0);
         }
+        // 添加offset到openToken之间的内容到结果中
         builder.append(src, offset, start - offset);
+        // 修改offset
         offset = start + openToken.length();
+        // 寻找closeToken的位置
         int end = text.indexOf(closeToken, offset);
         while (end > -1) {
           if (end > offset && src[end - 1] == '\\') {
             // this close token is escaped. remove the backslash and continue.
+            // 如果closeToken前面的字符是\转义字符，则忽略
             expression.append(src, offset, end - offset - 1).append(closeToken);
+            // 修改offset
             offset = end + closeToken.length();
+            // 继续寻找closeToken的位置
             end = text.indexOf(closeToken, offset);
           } else {
+            // 找到了closeToken的位置，添加到结果中
             expression.append(src, offset, end - offset);
             break;
           }
         }
         if (end == -1) {
           // close token was not found.
+          // 如果找不到closeToken，就直接从openToken开始到结尾拼接到结果
           builder.append(src, start, src.length - start);
           offset = src.length;
         } else {
+          // 如果找到了closeToken，将expression交给handler处理，并将结果添加到builder中
           builder.append(handler.handleToken(expression.toString()));
+          // 修改offset
           offset = end + closeToken.length();
         }
       }
+      // 继续寻找openToken的位置
       start = text.indexOf(openToken, offset);
     }
+    // 拼接剩余的部分
     if (offset < src.length) {
       builder.append(src, offset, src.length - offset);
     }
