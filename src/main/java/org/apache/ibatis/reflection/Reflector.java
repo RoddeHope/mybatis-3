@@ -49,20 +49,55 @@ import org.apache.ibatis.reflection.property.PropertyNamer;
  */
 public class Reflector {
 
+  /**
+   * 对应的类
+   */
   private final Class<?> type;
+  /**
+   * 可读属性集合
+   */
   private final String[] readablePropertyNames;
+  /**
+   * 可写属性集合
+   */
   private final String[] writablePropertyNames;
+  /**
+   * setter方法映射
+   */
   private final Map<String, Invoker> setMethods = new HashMap<>();
+  /**
+   * getter方法映射
+   */
   private final Map<String, Invoker> getMethods = new HashMap<>();
+  /**
+   * 属性对应的setter方法的方法类型映射
+   *
+   * key 属性
+   * value 方法参数类型
+   */
   private final Map<String, Class<?>> setTypes = new HashMap<>();
+  /**
+   * 属性对应的getter方法的返回值类型映射
+   *
+   * key 属性
+   * value 方法参数属性
+   */
   private final Map<String, Class<?>> getTypes = new HashMap<>();
+  /**
+   * 默认的构造函数
+   */
   private Constructor<?> defaultConstructor;
 
+  /**
+   * 不区分大小写的属性集合
+   */
   private Map<String, String> caseInsensitivePropertyMap = new HashMap<>();
 
   public Reflector(Class<?> clazz) {
     type = clazz;
+    // 找到默认的构造函数（不一定有的）
     addDefaultConstructor(clazz);
+
     addGetMethods(clazz);
     addSetMethods(clazz);
     addFields(clazz);
@@ -77,16 +112,26 @@ public class Reflector {
   }
 
   private void addDefaultConstructor(Class<?> clazz) {
+    // 获取类声明的构造函数集合
     Constructor<?>[] constructors = clazz.getDeclaredConstructors();
-    Arrays.stream(constructors).filter(constructor -> constructor.getParameterTypes().length == 0)
-      .findAny().ifPresent(constructor -> this.defaultConstructor = constructor);
+    Arrays.stream(constructors)
+      // 找到无参构造函数
+      .filter(constructor -> constructor.getParameterTypes().length == 0)
+      .findAny()
+      .ifPresent(constructor -> this.defaultConstructor = constructor);
   }
 
   private void addGetMethods(Class<?> clazz) {
     Map<String, List<Method>> conflictingGetters = new HashMap<>();
+    // 获取这个类的所有方法（包括私有的、父类的）
     Method[] methods = getClassMethods(clazz);
-    Arrays.stream(methods).filter(m -> m.getParameterTypes().length == 0 && PropertyNamer.isGetter(m.getName()))
+    Arrays.stream(methods)
+      // 找到无参的getter方法（getXxx() 或 isXxx()方法都是）
+      .filter(m -> m.getParameterTypes().length == 0 && PropertyNamer.isGetter(m.getName()))
+      // 1. methodToProperty 根据方法名获取对应的属性名
+      // 2. addMethodConflict 将属性名，已经对应的方法名存放到conflictingGetters映射中（可能会一个属性名对应多个方法名，简称冲突）
       .forEach(m -> addMethodConflict(conflictingGetters, PropertyNamer.methodToProperty(m.getName()), m));
+    // 解决属性方法映射中的冲突
     resolveGetterConflicts(conflictingGetters);
   }
 
@@ -142,6 +187,7 @@ public class Reflector {
   }
 
   private void addMethodConflict(Map<String, List<Method>> conflictingMethods, String name, Method method) {
+    // 验证name的合法性
     if (isValidPropertyName(name)) {
       List<Method> list = conflictingMethods.computeIfAbsent(name, k -> new ArrayList<>());
       list.add(method);
