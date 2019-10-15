@@ -48,6 +48,7 @@ public class PropertyParser {
 
   private PropertyParser() {
     // Prevent Instantiation
+    // 构造方法声明为private，表明禁止构造PropertyParser对象
   }
 
   public static String parse(String string, Properties variables) {
@@ -58,7 +59,13 @@ public class PropertyParser {
 
   private static class VariableTokenHandler implements TokenHandler {
     private final Properties variables;
+    /**
+     * 是否开启默认值功能
+     */
     private final boolean enableDefaultValue;
+    /**
+     * 默认值的分隔符
+     */
     private final String defaultValueSeparator;
 
     private VariableTokenHandler(Properties variables) {
@@ -76,20 +83,27 @@ public class PropertyParser {
       if (variables != null) {
         String key = content;
         if (enableDefaultValue) {
+          // 开启默认值的时候
+          // 找到默认值分隔符的位置
           final int separatorIndex = content.indexOf(defaultValueSeparator);
           String defaultValue = null;
           if (separatorIndex >= 0) {
+            // 获取key
             key = content.substring(0, separatorIndex);
+            // 获取key对应的默认值
             defaultValue = content.substring(separatorIndex + defaultValueSeparator.length());
           }
           if (defaultValue != null) {
+            // 获取key对应的值
             return variables.getProperty(key, defaultValue);
           }
         }
         if (variables.containsKey(key)) {
+          // 获取key对应的值
           return variables.getProperty(key);
         }
       }
+      // variables中没有这个key就直接返回
       return "${" + content + "}";
     }
   }
