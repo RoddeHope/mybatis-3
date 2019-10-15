@@ -97,10 +97,13 @@ public class Reflector {
     type = clazz;
     // 找到默认的构造函数（不一定有的）
     addDefaultConstructor(clazz);
-
+    // 处理clazz中的getter方法，填充getMethods集合和getTypes集合
     addGetMethods(clazz);
+    // 处理class中的setter方法，填充setMethods集合和setTypes集合
     addSetMethods(clazz);
+    // 处理没有set/get方法的字段，填充getMethods集合和getTypes集合、setMethods集合和setTypes集合
     addFields(clazz);
+
     readablePropertyNames = getMethods.keySet().toArray(new String[0]);
     writablePropertyNames = setMethods.keySet().toArray(new String[0]);
     for (String propName : readablePropertyNames) {
@@ -155,8 +158,10 @@ public class Reflector {
             winner = candidate;
           }
         } else if (candidateType.isAssignableFrom(winnerType)) {
+          // winnerType是子类，则不做操作（采用子类的方法）
           // OK getter type is descendant
         } else if (winnerType.isAssignableFrom(candidateType)) {
+          // candidateType是子类，则采用candidateType的方法
           winner = candidate;
         } else {
           isAmbiguous = true;
@@ -284,6 +289,7 @@ public class Reflector {
       }
     }
     if (clazz.getSuperclass() != null) {
+      // 递归，处理父类对应的属性
       addFields(clazz.getSuperclass());
     }
   }
@@ -318,9 +324,11 @@ public class Reflector {
    * @return An array containing all methods in this class
    */
   private Method[] getClassMethods(Class<?> clazz) {
+    // 记录类中所有方法的唯一签名已经对应的Method对象
     Map<String, Method> uniqueMethods = new HashMap<>();
     Class<?> currentClass = clazz;
     while (currentClass != null && currentClass != Object.class) {
+      // 获取当前类中所有的声明方法
       addUniqueMethods(uniqueMethods, currentClass.getDeclaredMethods());
 
       // we also need to look for interface methods -
@@ -340,7 +348,10 @@ public class Reflector {
 
   private void addUniqueMethods(Map<String, Method> uniqueMethods, Method[] methods) {
     for (Method currentMethod : methods) {
+      // 忽略桥接方法
       if (!currentMethod.isBridge()) {
+        // 得到方法签名：返回值类型#方法名称:参数类型列表
+        // 方法签名是全局唯一的，可以作为该方法的唯一标识
         String signature = getSignature(currentMethod);
         // check to see if the method is already known
         // if it is known, then an extended class must have
