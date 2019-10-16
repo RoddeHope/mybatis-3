@@ -32,8 +32,10 @@ public class MethodInvoker implements Invoker {
     this.method = method;
 
     if (method.getParameterTypes().length == 1) {
+      // 参数长度为1的时候，一般为set方法，设置type为第一个参数类型
       type = method.getParameterTypes()[0];
     } else {
+      // 否则一般为get方法，设置type为返回类型
       type = method.getReturnType();
     }
   }
