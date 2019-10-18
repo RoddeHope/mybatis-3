@@ -27,6 +27,8 @@ import org.apache.ibatis.reflection.invoker.MethodInvoker;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * 类的元数据，基于Reflector和PropertyTokenizer
+ *
  * @author Clinton Begin
  */
 public class MetaClass {
@@ -55,6 +57,7 @@ public class MetaClass {
 
   public String findProperty(String name, boolean useCamelCaseMapping) {
     if (useCamelCaseMapping) {
+      // 下划线转驼峰
       name = name.replace("_", "");
     }
     return findProperty(name);
@@ -145,9 +148,16 @@ public class MetaClass {
     }
   }
 
+  /**
+   * 判断属性是否有get方法
+   * @param name 属性名
+   * @return
+   */
   public boolean hasGetter(String name) {
+    // 分词
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
+      // 有子表达式，则递归判断子表达式是否有get方法
       if (reflector.hasGetter(prop.getName())) {
         MetaClass metaProp = metaClassForProperty(prop);
         return metaProp.hasGetter(prop.getChildren());
@@ -155,6 +165,7 @@ public class MetaClass {
         return false;
       }
     } else {
+      // 没有子表达式，可以直接判断
       return reflector.hasGetter(prop.getName());
     }
   }
@@ -168,16 +179,21 @@ public class MetaClass {
   }
 
   private StringBuilder buildProperty(String name, StringBuilder builder) {
+    // 进行分词操作
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    // 有子表达式
     if (prop.hasNext()) {
+      // 从这里取出来的propertyName才是真正的驼峰命名格式的属性
       String propertyName = reflector.findPropertyName(prop.getName());
       if (propertyName != null) {
+        // 获取属性名，加到builder
         builder.append(propertyName);
         builder.append(".");
         MetaClass metaProp = metaClassForProperty(propertyName);
+        // 递归解析子表达式，并将结果添加到builder中
         metaProp.buildProperty(prop.getChildren(), builder);
       }
-    } else {
+    } else { // 没有子表达式
       String propertyName = reflector.findPropertyName(name);
       if (propertyName != null) {
         builder.append(propertyName);
