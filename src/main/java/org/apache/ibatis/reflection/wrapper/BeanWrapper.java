@@ -27,6 +27,7 @@ import org.apache.ibatis.reflection.invoker.Invoker;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * 针对普通对象
  * @author Clinton Begin
  */
 public class BeanWrapper extends BaseWrapper {
@@ -44,13 +45,13 @@ public class BeanWrapper extends BaseWrapper {
   @Override
   public Object get(PropertyTokenizer prop) {
     if (prop.getIndex() != null) {
-      // prop 解析的是集合，类似于user[1]
-      // 拿出来的collection对象的类型，是Map或Collection或数组
+      // prop是数组，类似于user[1]
+      // 拿到数组
       Object collection = resolveCollection(prop, object);
-      // 根据prop中的index获取collection集合对应的对象
+      // 根据prop中的index获取数组中对应的内容
       return getCollectionValue(prop, collection);
     } else {
-      // prop解析的不是一个集合，是一个bean，直接获取对象属性
+      // prop解析的不是一个数组，是一个bean，直接获取对象属性
       return getBeanProperty(prop, object);
     }
   }
@@ -121,6 +122,7 @@ public class BeanWrapper extends BaseWrapper {
 
   @Override
   public boolean hasSetter(String name) {
+    // 跟getSetterType、getGetterType的流程一毛一样
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
       if (metaClass.hasSetter(prop.getIndexedName())) {
@@ -140,6 +142,7 @@ public class BeanWrapper extends BaseWrapper {
 
   @Override
   public boolean hasGetter(String name) {
+    // 跟getSetterType、getGetterType的流程一毛一样
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
       if (metaClass.hasGetter(prop.getIndexedName())) {
@@ -160,10 +163,14 @@ public class BeanWrapper extends BaseWrapper {
   @Override
   public MetaObject instantiatePropertyValue(String name, PropertyTokenizer prop, ObjectFactory objectFactory) {
     MetaObject metaValue;
+    // 获取属性的set方法的参数类型
     Class<?> type = getSetterType(prop.getName());
     try {
+      // 创建对象
       Object newObject = objectFactory.create(type);
+      // 创建MetaObject
       metaValue = MetaObject.forObject(newObject, metaObject.getObjectFactory(), metaObject.getObjectWrapperFactory(), metaObject.getReflectorFactory());
+      // 设值
       set(prop, newObject);
     } catch (Exception e) {
       throw new ReflectionException("Cannot set value of property '" + name + "' because '" + name + "' is null and cannot be instantiated on instance of " + type.getName() + ". Cause:" + e.toString(), e);
