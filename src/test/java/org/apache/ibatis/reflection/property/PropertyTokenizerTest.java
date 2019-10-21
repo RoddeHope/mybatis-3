@@ -6,7 +6,8 @@ class PropertyTokenizerTest {
 
   @Test
   void testPropertyTokenizer() {
-    PropertyTokenizer propertyTokenizer = new PropertyTokenizer("order[0].item[0].name");
+    String express = "order[0].item[0].name";
+    PropertyTokenizer propertyTokenizer = new PropertyTokenizer(express);
     boolean hasNext = propertyTokenizer.hasNext();
     String name = propertyTokenizer.getName();
     String index = propertyTokenizer.getIndex();

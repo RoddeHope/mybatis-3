@@ -37,15 +37,20 @@ public class BeanWrapper extends BaseWrapper {
   public BeanWrapper(MetaObject metaObject, Object object) {
     super(metaObject);
     this.object = object;
+    // 创建MataClass对象
     this.metaClass = MetaClass.forClass(object.getClass(), metaObject.getReflectorFactory());
   }
 
   @Override
   public Object get(PropertyTokenizer prop) {
     if (prop.getIndex() != null) {
+      // prop 解析的是集合，类似于user[1]
+      // 拿出来的collection对象的类型，是Map或Collection或数组
       Object collection = resolveCollection(prop, object);
+      // 根据prop中的index获取collection集合对应的对象
       return getCollectionValue(prop, collection);
     } else {
+      // prop解析的不是一个集合，是一个bean，直接获取对象属性
       return getBeanProperty(prop, object);
     }
   }
@@ -79,13 +84,17 @@ public class BeanWrapper extends BaseWrapper {
   public Class<?> getSetterType(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
+      // prop存在子表达式
       MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
+        // 如果属性对应的值为null，那么返回属性对应的set方法的参数类型
         return metaClass.getSetterType(name);
       } else {
+        // 如果属性对应的值，不为空，则获取子表达式的set方法参数类型
         return metaValue.getSetterType(prop.getChildren());
       }
     } else {
+      // 没有子表达式，直接获取属性的set方法的参数类型
       return metaClass.getSetterType(name);
     }
   }
@@ -94,13 +103,18 @@ public class BeanWrapper extends BaseWrapper {
   public Class<?> getGetterType(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
+      // 有子表达式
+      // 创建MetaObject对象
       MetaObject metaValue = metaObject.metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
+        // 如果属性对应的值为null，那么返回属性对应的get方法的返回值类型
         return metaClass.getGetterType(name);
       } else {
+        // 如果属性对应的值，不为空，则获取子表达式的get方法返回值类型
         return metaValue.getGetterType(prop.getChildren());
       }
     } else {
+      // 没有子表达式，直接获取属性的set方法的参数类型
       return metaClass.getGetterType(name);
     }
   }
@@ -161,6 +175,7 @@ public class BeanWrapper extends BaseWrapper {
     try {
       Invoker method = metaClass.getGetInvoker(prop.getName());
       try {
+        // 调用对象的无参get方法
         return method.invoke(object, NO_ARGUMENTS);
       } catch (Throwable t) {
         throw ExceptionUtil.unwrapThrowable(t);
