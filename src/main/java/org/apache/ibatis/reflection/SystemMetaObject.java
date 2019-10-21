@@ -25,8 +25,17 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
  */
 public final class SystemMetaObject {
 
+  /**
+   * 提供单例的ObjectFactory对象
+   */
   public static final ObjectFactory DEFAULT_OBJECT_FACTORY = new DefaultObjectFactory();
+  /**
+   * 提供单例的ObjectWrapperFactory对象
+   */
   public static final ObjectWrapperFactory DEFAULT_OBJECT_WRAPPER_FACTORY = new DefaultObjectWrapperFactory();
+  /**
+   * 提供NullObject的MetaObject对象
+   */
   public static final MetaObject NULL_META_OBJECT = MetaObject.forObject(NullObject.class, DEFAULT_OBJECT_FACTORY, DEFAULT_OBJECT_WRAPPER_FACTORY, new DefaultReflectorFactory());
 
   private SystemMetaObject() {

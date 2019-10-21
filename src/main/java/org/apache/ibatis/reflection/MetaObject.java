@@ -28,11 +28,18 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapper;
 import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 /**
+ * 对象元数据，提供了对象属性值set/get操作，可以理解为是对BaseWrapper的进一步增强
  * @author Clinton Begin
  */
 public class MetaObject {
 
+  /**
+   * 原始的对象
+   */
   private final Object originalObject;
+  /**
+   * 封装过的对象
+   */
   private final ObjectWrapper objectWrapper;
   private final ObjectFactory objectFactory;
   private final ObjectWrapperFactory objectWrapperFactory;
@@ -44,6 +51,7 @@ public class MetaObject {
     this.objectWrapperFactory = objectWrapperFactory;
     this.reflectorFactory = reflectorFactory;
 
+    // 根据object类型创建对应的objectWrapper对象
     if (object instanceof ObjectWrapper) {
       this.objectWrapper = (ObjectWrapper) object;
     } else if (objectWrapperFactory.hasWrapperFor(object)) {
@@ -109,16 +117,25 @@ public class MetaObject {
     return objectWrapper.hasGetter(name);
   }
 
+  /**
+   * 获取属性对应的值
+   * @param name 属性名称
+   * @return
+   */
   public Object getValue(String name) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
+      // 存在子表达式
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
+        // 如果属性的值对应为空，则返回为空
         return null;
       } else {
+        // 递归调用，获取子表达式的值
         return metaValue.getValue(prop.getChildren());
       }
     } else {
+      // 直接获取属性对应的值
       return objectWrapper.get(prop);
     }
   }
@@ -126,23 +143,34 @@ public class MetaObject {
   public void setValue(String name, Object value) {
     PropertyTokenizer prop = new PropertyTokenizer(name);
     if (prop.hasNext()) {
+      // 存在子表达式
       MetaObject metaValue = metaObjectForProperty(prop.getIndexedName());
       if (metaValue == SystemMetaObject.NULL_META_OBJECT) {
         if (value == null) {
           // don't instantiate child path if value is null
           return;
         } else {
+          // 创建属性对应的MetaObject对象
           metaValue = objectWrapper.instantiatePropertyValue(name, prop, objectFactory);
         }
       }
+      // 递归调用，继续实例化子表达式的值
       metaValue.setValue(prop.getChildren(), value);
     } else {
+      // 直接设值
       objectWrapper.set(prop, value);
     }
   }
 
+  /**
+   * 为指定属性创建对应的MetaObject对象
+   * @param name 属性名称
+   * @return
+   */
   public MetaObject metaObjectForProperty(String name) {
+    // 获取属性值
     Object value = getValue(name);
+    // 创建MetaObject对象
     return MetaObject.forObject(value, objectFactory, objectWrapperFactory, reflectorFactory);
   }
 
