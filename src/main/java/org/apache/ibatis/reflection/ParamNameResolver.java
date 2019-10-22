@@ -28,6 +28,9 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+/**
+ * 参数名解析器
+ */
 public class ParamNameResolver {
 
   private static final String GENERIC_NAME_PREFIX = "param";
@@ -44,9 +47,17 @@ public class ParamNameResolver {
    * <li>aMethod(int a, int b) -&gt; {{0, "0"}, {1, "1"}}</li>
    * <li>aMethod(int a, RowBounds rb, int b) -&gt; {{0, "0"}, {2, "1"}}</li>
    * </ul>
+   *
+   * 参数名映射
+   *
+   * key: 参数顺序
+   * name: 参数名称（如果指定了@Param注解，参数名取注解中的值）
    */
   private final SortedMap<Integer, String> names;
 
+  /**
+   * 是否有{@link Param}注解标识的参数
+   */
   private boolean hasParamAnnotation;
 
   public ParamNameResolver(Configuration config, Method method) {
@@ -57,30 +68,38 @@ public class ParamNameResolver {
     // get names from @Param annotations
     for (int paramIndex = 0; paramIndex < paramCount; paramIndex++) {
       if (isSpecialParameter(paramTypes[paramIndex])) {
+        // 如果是特殊参数，则忽略
         // skip special parameters
         continue;
       }
       String name = null;
       for (Annotation annotation : paramAnnotations[paramIndex]) {
+        // 遍历每个参数上的注解
         if (annotation instanceof Param) {
+          // 发现参数上存在@Param注解
           hasParamAnnotation = true;
+          // 获取@Param注解对应的值
           name = ((Param) annotation).value();
           break;
         }
       }
       if (name == null) {
+        // 参数上没有指明@Param注解
         // @Param was not specified.
         if (config.isUseActualParamName()) {
+          // 获取真实的参数名称
           name = getActualParamName(method, paramIndex);
         }
         if (name == null) {
           // use the parameter index as the name ("0", "1", ...)
           // gcode issue #71
+          // 如果既没有指明@Param注解，也没有指明使用真实的参数名称配置，则使用编号
           name = String.valueOf(map.size());
         }
       }
       map.put(paramIndex, name);
     }
+    // 构建不可变映射
     names = Collections.unmodifiableSortedMap(map);
   }
 
