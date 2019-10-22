@@ -97,7 +97,7 @@ public class Reflector {
     type = clazz;
     // 找到默认的构造函数（不一定有的）
     addDefaultConstructor(clazz);
-    // 处理clazz中的getter方法，填充getMethods集合和getTypes集合
+    // 处理class中的getter方法，填充getMethods集合和getTypes集合
     addGetMethods(clazz);
     // 处理class中的setter方法，填充setMethods集合和setTypes集合
     addSetMethods(clazz);
