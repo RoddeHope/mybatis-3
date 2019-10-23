@@ -38,17 +38,47 @@ import org.apache.ibatis.io.Resources;
  */
 public class UnpooledDataSource implements DataSource {
 
+  /**
+   * 驱动类加载器
+   */
   private ClassLoader driverClassLoader;
+  /**
+   * 驱动属性
+   */
   private Properties driverProperties;
+  /**
+   * 已注册的驱动映射
+   */
   private static Map<String, Driver> registeredDrivers = new ConcurrentHashMap<>();
 
+  /**
+   * 驱动类名
+   */
   private String driver;
+  /**
+   * 数据库URL
+   */
   private String url;
+  /**
+   * 数据库用户名
+   */
   private String username;
+  /**
+   * 数据库密码
+   */
   private String password;
 
+  /**
+   * 是否自动提交事务
+   */
   private Boolean autoCommit;
+  /**
+   * 默认事务隔离级别
+   */
   private Integer defaultTransactionIsolationLevel;
+  /**
+   * 默认网络连接超时时长
+   */
   private Integer defaultNetworkTimeout;
 
   static {
@@ -217,24 +247,31 @@ public class UnpooledDataSource implements DataSource {
   }
 
   private Connection doGetConnection(Properties properties) throws SQLException {
+    // 初始化driver
     initializeDriver();
+    // 获取connection对象
     Connection connection = DriverManager.getConnection(url, properties);
+    // 配置connection对象
     configureConnection(connection);
     return connection;
   }
 
   private synchronized void initializeDriver() throws SQLException {
     if (!registeredDrivers.containsKey(driver)) {
+      // 如果已经注册的驱动中不存在该驱动，则初始化该驱动
       Class<?> driverType;
       try {
+        // 加载驱动类
         if (driverClassLoader != null) {
           driverType = Class.forName(driver, true, driverClassLoader);
         } else {
           driverType = Resources.classForName(driver);
         }
+        // 创建驱动对象
         // DriverManager requires the driver to be loaded via the system ClassLoader.
         // http://www.kfu.com/~nsayer/Java/dyn-jdbc.html
         Driver driverInstance = (Driver)driverType.getDeclaredConstructor().newInstance();
+        // 登记驱动
         DriverManager.registerDriver(new DriverProxy(driverInstance));
         registeredDrivers.put(driver, driverInstance);
       } catch (Exception e) {
