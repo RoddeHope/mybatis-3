@@ -28,6 +28,7 @@ import org.apache.ibatis.datasource.DataSourceFactory;
 
 /**
  * 基于JNDI的DataSourceFactory实现
+ * 依赖JNDI服务从容器中获取用户配置的DataSource
  * @author Clinton Begin
  */
 public class JndiDataSourceFactory implements DataSourceFactory {

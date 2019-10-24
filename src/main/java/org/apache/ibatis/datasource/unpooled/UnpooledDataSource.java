@@ -251,7 +251,7 @@ public class UnpooledDataSource implements DataSource {
     initializeDriver();
     // 获取connection对象
     Connection connection = DriverManager.getConnection(url, properties);
-    // 配置connection对象
+    // 配置connection对象，设置网络超时、自动提交和事务隔离级别
     configureConnection(connection);
     return connection;
   }
