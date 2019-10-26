@@ -32,13 +32,39 @@ class PooledConnection implements InvocationHandler {
   private static final Class<?>[] IFACES = new Class<?>[] { Connection.class };
 
   private final int hashCode;
+
+  /**
+   * 记录当前PooledConnection对象所在的PooledDataSource对象
+   */
   private final PooledDataSource dataSource;
+  /**
+   * 真正的数据库连接
+   */
   private final Connection realConnection;
+  /**
+   * 数据库连接代理对象
+   */
   private final Connection proxyConnection;
+  /**
+   * 从连接池中获取该连接的时间戳
+   */
   private long checkoutTimestamp;
+  /**
+   * 该连接创建的时间戳
+   */
   private long createdTimestamp;
+  /**
+   * 最后一次被使用的时间戳
+   */
   private long lastUsedTimestamp;
+  /**
+   * 用于标识连接所在的连接池
+   * 一个由数据库URL、用户名和密码计算出来的hash值
+   */
   private int connectionTypeCode;
+  /**
+   * 检测连接是否有效
+   */
   private boolean valid;
 
   /**
@@ -232,6 +258,7 @@ class PooledConnection implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     String methodName = method.getName();
+    // 如果调用close方法，则将其重新放入连接池，而不是销毁
     if (CLOSE.hashCode() == methodName.hashCode() && CLOSE.equals(methodName)) {
       dataSource.pushConnection(this);
       return null;
@@ -240,8 +267,10 @@ class PooledConnection implements InvocationHandler {
       if (!Object.class.equals(method.getDeclaringClass())) {
         // issue #579 toString() should never fail
         // throw an SQLException instead of a Runtime
+        // 通过valid字段，检测连接是否有效
         checkConnection();
       }
+      // 调用真正数据库连接对象的对应方法
       return method.invoke(realConnection, args);
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
