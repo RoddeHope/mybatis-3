@@ -20,12 +20,20 @@ import org.apache.ibatis.cache.Cache;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 定时清空的Cache实现类
+ *
  * @author Clinton Begin
  */
 public class ScheduledCache implements Cache {
 
   private final Cache delegate;
+  /**
+   * 清空缓存的时间间隔，单位秒
+   */
   protected long clearInterval;
+  /**
+   * 最后清空的时间，单位毫秒
+   */
   protected long lastClear;
 
   public ScheduledCache(Cache delegate) {
