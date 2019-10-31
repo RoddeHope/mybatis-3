@@ -30,11 +30,17 @@ import org.apache.ibatis.cache.CacheException;
  * It sets a lock over a cache key when the element is not found in cache.
  * This way, other threads will wait until this element is filled instead of hitting the database.
  *
+ * 简单、低效的阻塞Cache实现类
+ * 当根据某个key无法获取缓存的时候，此时会阻塞其他获取该key的线程，直到有其他线程设置该key的缓存
+ *
  * @author Eduardo Macarron
  *
  */
 public class BlockingCache implements Cache {
 
+  /**
+   * 等待key上锁的时间
+   */
   private long timeout;
   private final Cache delegate;
   private final ConcurrentHashMap<Object, ReentrantLock> locks;
@@ -89,12 +95,19 @@ public class BlockingCache implements Cache {
     return locks.computeIfAbsent(key, k -> new ReentrantLock());
   }
 
+  /**
+   * 获取key对应的锁
+   * @param key
+   */
   private void acquireLock(Object key) {
+    // 获取key对应的锁
     Lock lock = getLockForKey(key);
     if (timeout > 0) {
       try {
+        // 在指定时间内，尝试获取锁
         boolean acquired = lock.tryLock(timeout, TimeUnit.MILLISECONDS);
         if (!acquired) {
+          // 获取锁失败
           throw new CacheException("Couldn't get a lock in " + timeout + " for the key " +  key + " at the cache " + delegate.getId());
         }
       } catch (InterruptedException e) {
