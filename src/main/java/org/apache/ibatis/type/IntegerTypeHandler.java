@@ -34,7 +34,9 @@ public class IntegerTypeHandler extends BaseTypeHandler<Integer> {
   @Override
   public Integer getNullableResult(ResultSet rs, String columnName)
       throws SQLException {
+    // getInt方法在column对应的值为空的时候，返回0
     int result = rs.getInt(columnName);
+    // column为null的时候才返回null
     return result == 0 && rs.wasNull() ? null : result;
   }
 

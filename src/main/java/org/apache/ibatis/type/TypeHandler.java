@@ -21,19 +21,54 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * Mybatis中所有类型转换器共同实现的接口
  * @author Clinton Begin
  */
 public interface TypeHandler<T> {
 
+  /**
+   * 通过PreparedStatement为SQL语句绑定参数
+   * java类型 -> jdbc类型
+   *
+   * @param ps
+   * @param i
+   * @param parameter
+   * @param jdbcType
+   * @throws SQLException
+   */
   void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
 
   /**
-   * @param columnName Colunm name, when configuration <code>useColumnLabel</code> is <code>false</code>
+   * 获取ResultSet中指定的字段
+   * jdbc类型 -> java类型
+   *
+   * @param rs
+   * @param columnName
+   * @return
+   * @throws SQLException
    */
   T getResult(ResultSet rs, String columnName) throws SQLException;
 
+  /**
+   * 获取ResultSet中指定字段位置的值
+   * jdbc类型 -> java类型
+   *
+   * @param rs
+   * @param columnIndex
+   * @return
+   * @throws SQLException
+   */
   T getResult(ResultSet rs, int columnIndex) throws SQLException;
 
+  /**
+   * 获取CallableStatement对象中指定字段位置的值
+   * jdbc类型 -> java类型
+   *
+   * @param cs
+   * @param columnIndex
+   * @return
+   * @throws SQLException
+   */
   T getResult(CallableStatement cs, int columnIndex) throws SQLException;
 
 }

@@ -20,6 +20,7 @@ import java.lang.reflect.Type;
 
 /**
  * References a generic type.
+ * 引用泛型抽象类
  *
  * @param <T> the referenced type
  * @since 3.1.0
@@ -54,6 +55,7 @@ public abstract class TypeReference<T> {
     return rawType;
   }
 
+  // 获取类定义的泛型
   public final Type getRawType() {
     return rawType;
   }

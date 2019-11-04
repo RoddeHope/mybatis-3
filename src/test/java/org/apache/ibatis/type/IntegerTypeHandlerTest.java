@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Type;
+
 class IntegerTypeHandlerTest extends BaseTypeHandlerTest {
 
   private static final TypeHandler<Integer> TYPE_HANDLER = new IntegerTypeHandler();
@@ -85,6 +87,13 @@ class IntegerTypeHandlerTest extends BaseTypeHandlerTest {
     when(cs.getInt(1)).thenReturn(0);
     when(cs.wasNull()).thenReturn(true);
     assertNull(TYPE_HANDLER.getResult(cs, 1));
+  }
+
+  @Test
+  public void test(){
+    IntegerTypeHandler typeHandler = (IntegerTypeHandler) TYPE_HANDLER;
+    Type rawType = typeHandler.getRawType();
+    System.out.println(rawType);
   }
 
 }
