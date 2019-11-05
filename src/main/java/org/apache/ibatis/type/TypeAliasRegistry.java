@@ -33,6 +33,8 @@ import org.apache.ibatis.io.ResolverUtil;
 import org.apache.ibatis.io.Resources;
 
 /**
+ * 类型与别名的注册表
+ * 通过别名，可以在mapper.xml中的resultType和parameterType属性不使用类的全限定名
  * @author Clinton Begin
  */
 public class TypeAliasRegistry {
@@ -139,11 +141,17 @@ public class TypeAliasRegistry {
   }
 
   public void registerAlias(Class<?> type) {
+    /*
+     指定别名为class对象的简单类名
+     比如String class 的简单类名就是String
+     */
     String alias = type.getSimpleName();
     Alias aliasAnnotation = type.getAnnotation(Alias.class);
     if (aliasAnnotation != null) {
+      // 如果类使用了注解@Alias，则使用注解标识的别名
       alias = aliasAnnotation.value();
     }
+    // 注册别名
     registerAlias(alias, type);
   }
 
@@ -152,6 +160,10 @@ public class TypeAliasRegistry {
       throw new TypeException("The parameter alias cannot be null");
     }
     // issue #748
+    /*
+    将别名转成小写
+    不管在parameterType中写别名是大写或大小写混合，都会统一转成小写，然后再注册别名
+     */
     String key = alias.toLowerCase(Locale.ENGLISH);
     if (typeAliases.containsKey(key) && typeAliases.get(key) != null && !typeAliases.get(key).equals(value)) {
       throw new TypeException("The alias '" + alias + "' is already mapped to the value '" + typeAliases.get(key).getName() + "'.");
