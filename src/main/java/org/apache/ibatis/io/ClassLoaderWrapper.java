@@ -25,7 +25,13 @@ import java.net.URL;
  */
 public class ClassLoaderWrapper {
 
+  /**
+   * 默认ClassLoader对象
+   */
   ClassLoader defaultClassLoader;
+  /**
+   * 系统ClassLoader对象
+   */
   ClassLoader systemClassLoader;
 
   ClassLoaderWrapper() {
@@ -140,7 +146,7 @@ public class ClassLoaderWrapper {
     URL url;
 
     for (ClassLoader cl : classLoader) {
-
+      // 遍历ClassLoader，寻找resource
       if (null != cl) {
 
         // look for the resource as passed in...
