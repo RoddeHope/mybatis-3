@@ -40,7 +40,14 @@ public class Plugin implements InvocationHandler {
     this.signatureMap = signatureMap;
   }
 
+  /**
+   * 生成插件代理对象
+   * @param target 目标对象
+   * @param interceptor 拦截器
+   * @return
+   */
   public static Object wrap(Object target, Interceptor interceptor) {
+    // 拿到拦截器中@Signature注解拦截的类以及相应的方法
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
     Class<?> type = target.getClass();
     Class<?>[] interfaces = getAllInterfaces(type, signatureMap);

@@ -28,11 +28,16 @@ public class InterceptorChain {
 
   public Object pluginAll(Object target) {
     for (Interceptor interceptor : interceptors) {
+      // 遍历拦截器，生成带责任链的代理对象
       target = interceptor.plugin(target);
     }
     return target;
   }
 
+  /**
+   * 加载拦截器
+   * @param interceptor 拦截器
+   */
   public void addInterceptor(Interceptor interceptor) {
     interceptors.add(interceptor);
   }
